@@ -27,16 +27,48 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(DIRECTORY description
+# Export plugin config file
+pluginlib_export_plugin_description_file(webots_ros2_driver tb3_driver.xml)
+
+# Driver lib
+add_library(
+  ${PROJECT_NAME}
+  SHARED
+  src/tbot3_driver.cpp
+)
+target_include_directories(
+  ${PROJECT_NAME}
+  PRIVATE
+  include
+)
+ament_target_dependencies(
+  ${PROJECT_NAME}
+  pluginlib
+  rclcpp
+  webots_ros2_driver
+)
+install(TARGETS
+  ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Install directories
+install(DIRECTORY
+  launch
+  description
+  worlds
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(DIRECTORY worlds
-  DESTINATION share/${PROJECT_NAME}
-)
+install(FILES tb3_driver.xml DESTINATION share/${PROJECT_NAME})
 
-install(DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}
+ament_export_include_directories(
+  include
+)
+ament_export_libraries(
+  ${PROJECT_NAME}
 )
 
 ament_package()

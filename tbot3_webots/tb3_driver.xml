@@ -1,0 +1,7 @@
+<library path="tbo3_webots">
+    <class name="tb3_driver/Tb3Driver" type="tb3_driver::Tb3Driver" base_class_type="webots_ros2_driver::PluginInterface">
+        <description>
+            Custom differential drive controller/driver for Turtlebot3
+        </description>
+    </class>
+</library>
