@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<robot name="turtlebot3_waffle">
+  <webots>
+    <plugin type="tb3_driver:Tb3Driver"/>
+  </webots>
+</robot>
