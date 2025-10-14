@@ -1,11 +1,16 @@
 <?xml version="1.0" ?>
-<robot name="turtlebot3_waffle" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="turtlebot3_waffle">
   <!-- <xacro:include filename="$(find turtlebot3_description)/urdf/common_properties.urdf"/>
 
   <xacro:property name="r200_cam_rgb_px" value="0.005"/>
   <xacro:property name="r200_cam_rgb_py" value="0.018"/>
   <xacro:property name="r200_cam_rgb_pz" value="0.013"/>
   <xacro:property name="r200_cam_depth_offset" value="0.01"/> -->
+
+  <webots>
+    <plugin type="tb3_driver:Tb3Driver">
+    </plugin>
+  </webots>
 
   <!-- Init colour -->
   <material name="black">
@@ -60,7 +65,7 @@
     <visual>
       <origin xyz="-0.064 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://turtlebot3_gazebo/models/turtlebot3_common/meshes/bases/waffle_base.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://tbot3_webots/description/meshes/collision/waffle_base.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="light_black"/>
     </visual>
@@ -92,7 +97,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="package://turtlebot3_gazebo/models/turtlebot3_common/meshes/wheels/left_tire.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://tbot3_webots/description/meshes/collision/left_tire.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -124,7 +129,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="package://turtlebot3_gazebo/models/turtlebot3_common/meshes/wheels/right_tire.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://tbot3_webots/description/meshes/collision/right_tire.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -209,7 +214,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://turtlebot3_gazebo/models/turtlebot3_common/meshes/sensors/lds.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://tbot3_webots/description/meshes/collision/lds.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -230,7 +235,7 @@
     </inertial>
   </link>
 
-  <joint name="camera_joint" type="fixed">
+  <!-- <joint name="camera_joint" type="fixed">
     <origin xyz="0.064 -0.065 0.094" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="camera_link"/>
@@ -240,7 +245,7 @@
     <visual>
      <origin xyz="0 0 0" rpy="1.57 0 1.57"/>
       <geometry>
-       <mesh filename="package://turtlebot3_gazebo/models/turtlebot3_common/meshes/sensors/r200.dae" />
+       <mesh filename="package://tbot3_webots/description/meshes/visual/r200.dae" />
       </geometry>
     </visual>
     <collision>
@@ -249,20 +254,10 @@
         <box size="0.012 0.132 0.020"/>
       </geometry>
     </collision>
-
-    <!-- This inertial field needs doesn't contain reliable data!! -->
-<!--   <inertial>
-      <mass value="0.564" />
-      <origin xyz="0 0 0" />
-      <inertia ixx="0.003881243" ixy="0.0" ixz="0.0"
-               iyy="0.000498940" iyz="0.0"
-               izz="0.003879257" />
-    </inertial>-->
   </link>
 
   <joint name="camera_rgb_joint" type="fixed">
     <origin xyz="0.005 0.018 0.013" rpy="0 0 0"/>
-    <!-- <origin xyz="${r200_cam_rgb_px} ${r200_cam_rgb_py} ${r200_cam_rgb_pz}" rpy="0 0 0"/> -->
     <parent link="camera_link"/>
     <child link="camera_rgb_frame"/>
   </joint>
@@ -277,7 +272,6 @@
 
   <joint name="camera_depth_joint" type="fixed">
     <origin xyz="0.005 0.028 0.013" rpy="0 0 0"/>
-    <!-- <origin xyz="${r200_cam_rgb_px} ${r200_cam_rgb_py + r200_cam_depth_offset} ${r200_cam_rgb_pz}" rpy="0 0 0"/> -->
     <parent link="camera_link"/>
     <child link="camera_depth_frame"/>
   </joint>
@@ -288,6 +282,6 @@
     <parent link="camera_depth_frame"/>
     <child link="camera_depth_optical_frame"/>
   </joint>
-  <link name="camera_depth_optical_frame"/>
+  <link name="camera_depth_optical_frame"/> -->
 
 </robot>
