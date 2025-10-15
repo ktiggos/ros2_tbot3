@@ -36,17 +36,20 @@ add_library(
   SHARED
   src/tbot3_driver.cpp
 )
+
 target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
   include
 )
+
 ament_target_dependencies(
   ${PROJECT_NAME}
   pluginlib
   rclcpp
   webots_ros2_driver
 )
+
 install(TARGETS
   ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
@@ -62,11 +65,10 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(FILES tb3_driver.xml DESTINATION share/${PROJECT_NAME})
-
 ament_export_include_directories(
   include
 )
+
 ament_export_libraries(
   ${PROJECT_NAME}
 )
