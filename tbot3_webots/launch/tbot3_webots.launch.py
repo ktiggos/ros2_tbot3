@@ -58,7 +58,7 @@ def generate_launch_description():
         webots._supervisor,
         robot_state_publisher,
         spawner,
-        # driver,
+        driver,
         launch.actions.RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=webots,
