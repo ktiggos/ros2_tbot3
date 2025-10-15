@@ -8,7 +8,7 @@
   <xacro:property name="r200_cam_depth_offset" value="0.01"/> -->
 
   <webots>
-    <plugin type="tb3_driver:Tb3Driver">
+    <plugin type="tb3_driver::Tb3Driver">
     </plugin>
   </webots>
 
