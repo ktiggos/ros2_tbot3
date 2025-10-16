@@ -66,9 +66,9 @@
     <visual>
       <origin xyz="-0.064 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://tbot3_webots/description/meshes/collision/waffle_base.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://tbot3_webots/description/meshes/visual/waffle_base.dae" scale="0.001 0.001 0.001"/>
       </geometry>
-      <material name="light_black"/>
+      <!-- <material name="light_black"/> -->
     </visual>
 
     <collision>
@@ -98,9 +98,9 @@
     <visual>
       <origin xyz="0 0 0" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="package://tbot3_webots/description/meshes/collision/left_tire.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://tbot3_webots/description/meshes/visual/left_tire.dae" scale="0.001 0.001 0.001"/>
       </geometry>
-      <material name="dark"/>
+      <!-- <material name="dark"/> -->
     </visual>
 
     <collision>
@@ -130,9 +130,9 @@
     <visual>
       <origin xyz="0 0 0" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="package://tbot3_webots/description/meshes/collision/right_tire.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://tbot3_webots/description/meshes/visual/right_tire.dae" scale="0.001 0.001 0.001"/>
       </geometry>
-      <material name="dark"/>
+      <!-- <material name="dark"/> -->
     </visual>
 
     <collision>
