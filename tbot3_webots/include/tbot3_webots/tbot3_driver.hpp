@@ -13,7 +13,7 @@ namespace tb3_driver
 class Tb3Driver : public webots_ros2_driver::PluginInterface {
 public:
     void step() override;
-    void init(webots_ros2_driver::WebotsNode *node,
+    void init(webots_ros2_driver::WebotsNode* node,
               std::unordered_map<std::string, std::string> &parameters) override;
 private:
     void cmdVelCB(const geometry_msgs::msg::Twist::SharedPtr msg);
@@ -23,6 +23,7 @@ private:
 
     WbDeviceTag left_motor;
     WbDeviceTag right_motor;
+    webots_ros2_driver::WebotsNode* node_;
 };
 }
 
