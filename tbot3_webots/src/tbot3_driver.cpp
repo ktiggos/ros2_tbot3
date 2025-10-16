@@ -23,7 +23,9 @@ void tb3_driver::Tb3Driver::cmdVelCB(const geometry_msgs::msg::Twist::SharedPtr 
 void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
                                  std::unordered_map<std::string, std::string> &parameters)
 {
-    std::cout<<"INITIALIZING DRIVER"<<std::endl;
+    std::cout<<"Initializing differential driver for Turtlebot..."<<std::endl;
+
+    this->node_ = node;
     
     right_motor = wb_robot_get_device("wheel_right_joint");
     left_motor = wb_robot_get_device("wheel_left_joint");
@@ -34,19 +36,29 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
     wb_motor_set_position(right_motor, INFINITY);
     wb_motor_set_velocity(right_motor, 0.0);
 
+    cb_time = node->get_clock()->now();
+    driver_time = node->get_clock()->now();
+
     cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>(
         "/cmd_vel",
         rclcpp::SensorDataQoS().reliable(),
         [this](geometry_msgs::msg::Twist::SharedPtr msg) -> void {
             this->cmdVelCB(msg);
+            cb_time = node_->get_clock()->now();
         }
     );
 }
 
 void tb3_driver::Tb3Driver::step(){
+    driver_time = node_->get_clock()->now();
+
+    bool stale{ (driver_time - cb_time) < 
+        rclcpp::Duration::from_seconds(timeout)
+    };
+
     // Differential Drive is used for Turtlebot3
-    double fwd_speed = cmd_vel_msg.linear.x;
-    double ang_speed = cmd_vel_msg.angular.z;
+    double fwd_speed = stale ? cmd_vel_msg.linear.x : 0.0;
+    double ang_speed = stale ? cmd_vel_msg.angular.z : 0.0;
 
     // Rotational speeds for motors (req.speed/rad)
     double left_motor_cmd = (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
