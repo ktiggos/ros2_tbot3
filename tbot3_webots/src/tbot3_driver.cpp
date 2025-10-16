@@ -66,6 +66,9 @@ void tb3_driver::Tb3Driver::step(){
     double left_motor_cmd = (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
     double right_motor_cmd = (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
 
+    left_motor_cmd = abs(left_motor_cmd) < 10.0 ? left_motor_cmd : (left_motor_cmd/abs(left_motor_cmd))*10.0;
+    right_motor_cmd = abs(right_motor_cmd) < 10.0 ? right_motor_cmd : (right_motor_cmd/abs(right_motor_cmd))*10.0;
+
     wb_motor_set_velocity(left_motor, left_motor_cmd);
     wb_motor_set_velocity(right_motor, right_motor_cmd);
 }
