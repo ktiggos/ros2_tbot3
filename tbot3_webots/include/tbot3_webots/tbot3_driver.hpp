@@ -23,6 +23,11 @@ private:
 
     WbDeviceTag left_motor;
     WbDeviceTag right_motor;
+
+    // Callback watchdog
+    rclcpp::Time cb_time, driver_time;
+    double timeout{0.2}; // 200ms
+
     webots_ros2_driver::WebotsNode* node_;
 };
 }
