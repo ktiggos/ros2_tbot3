@@ -12,6 +12,8 @@
 // Values taken from URDF
 #define WHEEL_HALF_DIS 0.144
 #define WHEEL_RAD 0.033
+#define LINEAR_COEFF 0.33/10.0
+#define ANGULAR_COEFF 2.29/10.0
 
 PLUGINLIB_EXPORT_CLASS(tb3_driver::Tb3Driver, webots_ros2_driver::PluginInterface);
 
@@ -57,8 +59,8 @@ void tb3_driver::Tb3Driver::step(){
     };
 
     // Differential Drive is used for Turtlebot3
-    double fwd_speed = stale ? cmd_vel_msg.linear.x : 0.0;
-    double ang_speed = stale ? cmd_vel_msg.angular.z : 0.0;
+    double fwd_speed = stale ? (cmd_vel_msg.linear.x)*LINEAR_COEFF : 0.0;
+    double ang_speed = stale ? (cmd_vel_msg.angular.z)*ANGULAR_COEFF : 0.0;
 
     // Rotational speeds for motors (req.speed/rad)
     double left_motor_cmd = (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
