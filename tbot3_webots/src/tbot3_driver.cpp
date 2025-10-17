@@ -63,12 +63,12 @@ void tb3_driver::Tb3Driver::step(){
     double ang_speed = stale ? (cmd_vel_msg.angular.z)*ANGULAR_COEFF : 0.0;
 
     // Rotational speeds for motors (req.speed/rad)
-    double left_motor_cmd = (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
-    double right_motor_cmd = (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
+    double lm_cmd = (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
+    double rm_cmd = (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
 
-    left_motor_cmd = abs(left_motor_cmd) < 10.0 ? left_motor_cmd : (left_motor_cmd/abs(left_motor_cmd))*10.0;
-    right_motor_cmd = abs(right_motor_cmd) < 10.0 ? right_motor_cmd : (right_motor_cmd/abs(right_motor_cmd))*10.0;
+    lm_cmd = abs(lm_cmd) < 10.0 ? lm_cmd : (lm_cmd/abs(lm_cmd))*10.0;
+    rm_cmd = abs(rm_cmd) < 10.0 ? rm_cmd : (rm_cmd/abs(rm_cmd))*10.0;
 
-    wb_motor_set_velocity(left_motor, left_motor_cmd);
-    wb_motor_set_velocity(right_motor, right_motor_cmd);
+    wb_motor_set_velocity(left_motor, lm_cmd);
+    wb_motor_set_velocity(right_motor, rm_cmd);
 }
