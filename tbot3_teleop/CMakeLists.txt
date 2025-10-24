@@ -22,4 +22,12 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+add_executable(xbox_driver src/xbox_driver.cpp)
+ament_target_dependencies(xbox_driver rclcpp)
+
+install(TARGETS
+  xbox_driver
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_package()
