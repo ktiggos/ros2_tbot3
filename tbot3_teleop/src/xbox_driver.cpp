@@ -15,11 +15,28 @@ class XboxDriver : public rclcpp::Node {
             RCLCPP_INFO(logger,"Reading from joy device: %s",
                 static_cast<std::string>(m_dev).c_str()
             );
+            
+            evtimer_ = this->create_wall_timer(std::chrono::milliseconds(100),
+                [this]() -> void {
+                    this->eventCB();
+                }
+            );
         };
 
     private:
-        std::string m_dev;
+        void eventCB(){
+            int fd = open(m_dev, O_RDONLY);
+            size_t buffer{64};
+
+            RCLCPP_INFO(logger, "READING");
+        }
+
+        const char* m_dev;
         rclcpp::Logger logger {this->get_logger()};
+        rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr publisher_;
+        sensor_msgs::msg::Joy joy_msg;
+
+        rclcpp::TimerBase::SharedPtr evtimer_, ptimer_;
 };
 
 int main(int argc, char* argv[]){
