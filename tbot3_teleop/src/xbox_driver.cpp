@@ -21,6 +21,12 @@ class XboxDriver : public rclcpp::Node {
                     this->eventCB();
                 }
             );
+
+            ptimer_ = this->create_wall_timer(std::chrono::milliseconds(200),
+                [this]() -> void {
+                    this->pubCB();
+                }
+            );
         };
 
     private:
@@ -29,6 +35,10 @@ class XboxDriver : public rclcpp::Node {
             size_t buffer{64};
 
             RCLCPP_INFO(logger, "READING");
+        }
+
+        void pubCB(){
+            RCLCPP_INFO(logger,"PUBLISHING");
         }
 
         const char* m_dev;
