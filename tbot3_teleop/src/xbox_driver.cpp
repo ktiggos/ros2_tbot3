@@ -15,6 +15,8 @@ class XboxDriver : public rclcpp::Node {
             RCLCPP_INFO(logger,"Reading from joy device: %s",
                 static_cast<std::string>(m_dev).c_str()
             );
+
+            fd = ::open(m_dev, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
             
             evtimer_ = this->create_wall_timer(std::chrono::milliseconds(100),
                 [this]() -> void {
@@ -41,6 +43,7 @@ class XboxDriver : public rclcpp::Node {
             RCLCPP_INFO(logger,"PUBLISHING");
         }
 
+        int fd;
         const char* m_dev;
         rclcpp::Logger logger {this->get_logger()};
         rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr publisher_;
