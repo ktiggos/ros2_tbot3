@@ -33,10 +33,10 @@ class XboxDriver : public rclcpp::Node {
 
     private:
         void eventCB(){
-            int fd = open(m_dev, O_RDONLY);
-            size_t buffer{64};
+            struct input_event ev[64];
+            ssize_t n = ::read(fd, ev, sizeof(ev));
 
-            RCLCPP_INFO(logger, "READING");
+            RCLCPP_INFO(logger,"READING");
         }
 
         void pubCB(){
