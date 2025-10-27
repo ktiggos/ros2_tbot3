@@ -1,16 +1,20 @@
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+
 #include <iostream>
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/input.h>
 #include <sys/ioctl.h>
-
-#include <rclcpp/rclcpp.hpp>
+#include <chrono>
 
 class XboxDriver : public rclcpp::Node {
     public:
-        XboxDriver(std::string& dev)
+        XboxDriver(const char* dev)
         : Node("xbox_driver"), m_dev{dev} {
-            RCLCPP_INFO(logger,"Reading from joy device: %s", m_dev.c_str());
+            RCLCPP_INFO(logger,"Reading from joy device: %s",
+                static_cast<std::string>(m_dev).c_str()
+            );
         };
 
     private:
@@ -21,7 +25,7 @@ class XboxDriver : public rclcpp::Node {
 int main(int argc, char* argv[]){
     rclcpp::init(argc,argv);
 
-    std::string dev = (argc > 1) ? argv[1] : "/dev/input/event14";
+    const char* dev = (argc > 1) ? argv[1] : "/dev/input/event14";
 
     rclcpp::spin(std::make_shared<XboxDriver>(dev));
     rclcpp::shutdown();
