@@ -26,6 +26,12 @@ endif()
 add_executable(xbox_driver src/xbox_driver.cpp)
 ament_target_dependencies(xbox_driver rclcpp sensor_msgs)
 
+target_include_directories(xbox_driver
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
 install(TARGETS
   xbox_driver
   DESTINATION lib/${PROJECT_NAME}

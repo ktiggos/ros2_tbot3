@@ -1,56 +1,37 @@
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/joy.hpp>
+#include "tbot3_teleop/xbox_driver.hpp"
 
-#include <iostream>
-#include <fcntl.h>
-#include <unistd.h>
-#include <linux/input.h>
-#include <sys/ioctl.h>
-#include <chrono>
+XboxDriver::XboxDriver(const char* dev)
+: Node("xbox_driver"), m_dev{dev}{
+    RCLCPP_INFO(logger,"Reading from joy device: %s",
+        static_cast<std::string>(m_dev).c_str()
+    );
 
-class XboxDriver : public rclcpp::Node {
-    public:
-        XboxDriver(const char* dev)
-        : Node("xbox_driver"), m_dev{dev} {
-            RCLCPP_INFO(logger,"Reading from joy device: %s",
-                static_cast<std::string>(m_dev).c_str()
-            );
-
-            fd = ::open(m_dev, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
-            
-            evtimer_ = this->create_wall_timer(std::chrono::milliseconds(100),
-                [this]() -> void {
-                    this->eventCB();
-                }
-            );
-
-            ptimer_ = this->create_wall_timer(std::chrono::milliseconds(200),
-                [this]() -> void {
-                    this->pubCB();
-                }
-            );
-        };
-
-    private:
-        void eventCB(){
-            struct input_event ev[64];
-            ssize_t n = ::read(fd, ev, sizeof(ev));
-
-            RCLCPP_INFO(logger,"READING");
+    fd = ::open(m_dev, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+    
+    evtimer_ = this->create_wall_timer(std::chrono::milliseconds(100),
+        [this]() -> void {
+            this->eventCB();
         }
+    );
 
-        void pubCB(){
-            RCLCPP_INFO(logger,"PUBLISHING");
+    ptimer_ = this->create_wall_timer(std::chrono::milliseconds(200),
+        [this]() -> void {
+            this->pubCB();
         }
+    );
+}
 
-        int fd;
-        const char* m_dev;
-        rclcpp::Logger logger {this->get_logger()};
-        rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr publisher_;
-        sensor_msgs::msg::Joy joy_msg;
+void XboxDriver::eventCB(){
+    struct input_event ev[64];
+    ssize_t n = ::read(fd, (void*)ev, 64);
+    size_t cnt = n/sizeof(input_event);
 
-        rclcpp::TimerBase::SharedPtr evtimer_, ptimer_;
-};
+    RCLCPP_INFO(logger,"%li", cnt);
+}
+
+void XboxDriver::pubCB(){
+    // RCLCPP_INFO(logger,"PUBLISHING");
+}
 
 int main(int argc, char* argv[]){
     rclcpp::init(argc,argv);
