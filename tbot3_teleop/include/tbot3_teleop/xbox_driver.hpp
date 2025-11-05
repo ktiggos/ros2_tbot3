@@ -17,6 +17,8 @@ class XboxDriver : public rclcpp::Node {
     private:
         void eventCB();
         void pubCB();
+        uint map_buttons(__u16 code);
+        int map_axis(__u16 code);
 
         int fd;
         const char* m_dev;
