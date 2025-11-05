@@ -1,6 +1,6 @@
 #include <tbot3_teleop/xbox_driver.hpp>
 
-uint XboxDriver::map_buttons(__u16 code){
+int XboxDriver::map_buttons(__u16 code){
     switch (code)
     {
     case 304:
@@ -57,7 +57,7 @@ uint XboxDriver::map_buttons(__u16 code){
     }
 }
 
-int XboxDriver::map_axis(__u16 code){
+int XboxDriver::map_axes(__u16 code){
     switch (code)
     {
     case 0:
@@ -82,7 +82,7 @@ int XboxDriver::map_axis(__u16 code){
 
     case 5:
     return 5;
-    
+
     default:
     return -1;
     break;
