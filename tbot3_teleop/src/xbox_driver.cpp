@@ -6,9 +6,14 @@ XboxDriver::XboxDriver(const char* dev)
         static_cast<std::string>(m_dev).c_str()
     );
 
+    joy_msg.buttons = std::vector<int>(12,0);
+    joy_msg.axes = std::vector<float>(6,0);
+
+    publisher_ = this->create_publisher<sensor_msgs::msg::Joy>("/joy",10);
+
     fd = ::open(m_dev, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
     
-    evtimer_ = this->create_wall_timer(std::chrono::milliseconds(100),
+    evtimer_ = this->create_wall_timer(std::chrono::milliseconds(50),
         [this]() -> void {
             this->eventCB();
         }
@@ -26,11 +31,20 @@ void XboxDriver::eventCB(){
     ssize_t n = ::read(fd, (void*)ev, 64);
     size_t cnt = n/sizeof(input_event);
 
-    RCLCPP_INFO(logger,"%li", cnt);
+    if(n > 0){
+
+        joy_msg.header.stamp = this->now();
+
+        if(ev[0].type == 1){
+            joy_msg.buttons[map_buttons(ev[0].code)] = ev[0].value;
+        }else if(ev[0].type == 3){
+            joy_msg.axes[map_axes(ev[0].code)] = static_cast<float>(ev[0].value);
+        }
+    }
 }
 
 void XboxDriver::pubCB(){
-    // RCLCPP_INFO(logger,"PUBLISHING");
+    publisher_->publish(joy_msg);
 }
 
 int main(int argc, char* argv[]){
