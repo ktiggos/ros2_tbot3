@@ -19,7 +19,7 @@ XboxDriver::XboxDriver(const char* dev)
         }
     );
 
-    ptimer_ = this->create_wall_timer(std::chrono::milliseconds(200),
+    ptimer_ = this->create_wall_timer(std::chrono::milliseconds(100),
         [this]() -> void {
             this->pubCB();
         }
@@ -28,17 +28,17 @@ XboxDriver::XboxDriver(const char* dev)
 
 void XboxDriver::eventCB(){
     struct input_event ev[64];
-    ssize_t n = ::read(fd, (void*)ev, 64);
-    size_t cnt = n/sizeof(input_event);
+    ssize_t n = ::read(fd, (void*)ev, sizeof(ev));
 
     if(n > 0){
-
-        joy_msg.header.stamp = this->now();
-
-        if(ev[0].type == 1){
-            joy_msg.buttons[map_buttons(ev[0].code)] = ev[0].value;
-        }else if(ev[0].type == 3){
-            joy_msg.axes[map_axes(ev[0].code)] = static_cast<float>(ev[0].value);
+        size_t cnt = n/sizeof(input_event);
+        for(size_t i{0}; i<cnt; i++){
+            joy_msg.header.stamp = this->now();
+            if(ev[i].type == EV_ABS){
+                joy_msg.axes[map_axes(ev[i].code)] = ev[i].value;
+            }else if(ev[i].type == EV_KEY){
+                joy_msg.buttons[map_buttons(ev[i].code)] = ev[i].value;
+            }
         }
     }
 }
