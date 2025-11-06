@@ -33,8 +33,6 @@ void XboxDriver::eventCB(){
     if(n > 0){
         size_t cnt = n/sizeof(input_event);
         for(size_t i{0}; i<cnt; i++){
-
-            joy_msg.header.stamp = this->now();
             if(ev[i].type == EV_ABS){
 
                 float val{0.0};
@@ -53,6 +51,7 @@ void XboxDriver::eventCB(){
 }
 
 void XboxDriver::pubCB(){
+    joy_msg.header.stamp = this->now();
     publisher_->publish(joy_msg);
 }
 
