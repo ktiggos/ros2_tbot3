@@ -43,14 +43,6 @@ int XboxDriver::map_buttons(__u16 code){
     return 9;
     break;
 
-    case 16:
-    return 10;
-    break;
-
-    case 17:
-    return 11;
-    break;
-
     default:
     return -1;
     break;
@@ -82,6 +74,14 @@ int XboxDriver::map_axes(__u16 code){
 
     case 5:
     return 5;
+
+    case 16:
+    return 6;
+    break;
+
+    case 17:
+    return 7;
+    break;
 
     default:
     return -1;

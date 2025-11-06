@@ -6,8 +6,8 @@ XboxDriver::XboxDriver(const char* dev)
         static_cast<std::string>(m_dev).c_str()
     );
 
-    joy_msg.buttons = std::vector<int>(12,0);
-    joy_msg.axes = std::vector<float>(6,0);
+    joy_msg.buttons = std::vector<int>(10,0);
+    joy_msg.axes = std::vector<float>(8,0);
 
     publisher_ = this->create_publisher<sensor_msgs::msg::Joy>("/joy",10);
 
@@ -38,7 +38,7 @@ void XboxDriver::eventCB(){
             if(ev[i].type == EV_ABS){
 
                 float val{0.0};
-                if(ev[i].code == 2 || ev[i].code == 5){
+                if(std::set<int>{2, 5, 16, 17}.count(ev[i].code)){
                     val = ev[i].value;
                 }else{
                     val = abs(ev[i].value) > deadzone ? ev[i].value : 0.0;
