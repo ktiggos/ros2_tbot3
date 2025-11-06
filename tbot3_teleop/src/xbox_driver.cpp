@@ -33,10 +33,19 @@ void XboxDriver::eventCB(){
     if(n > 0){
         size_t cnt = n/sizeof(input_event);
         for(size_t i{0}; i<cnt; i++){
+
             joy_msg.header.stamp = this->now();
             if(ev[i].type == EV_ABS){
-                joy_msg.axes[map_axes(ev[i].code)] = ev[i].value;
+
+                float val{0.0};
+                if(ev[i].code == 2 || ev[i].code == 5){
+                    val = ev[i].value;
+                }else{
+                    val = abs(ev[i].value) > deadzone ? ev[i].value : 0.0;
+                }
+                joy_msg.axes[map_axes(ev[i].code)] = val;
             }else if(ev[i].type == EV_KEY){
+                
                 joy_msg.buttons[map_buttons(ev[i].code)] = ev[i].value;
             }
         }

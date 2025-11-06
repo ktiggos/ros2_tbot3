@@ -21,6 +21,7 @@ class XboxDriver : public rclcpp::Node {
         int map_axes(__u16 code);
 
         int fd;
+        float deadzone {2500.0};
         const char* m_dev;
         rclcpp::Logger logger {this->get_logger()};
         rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr publisher_;
