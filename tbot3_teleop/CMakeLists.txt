@@ -29,7 +29,22 @@ add_executable(xbox_driver
 )
 ament_target_dependencies(xbox_driver rclcpp sensor_msgs)
 
+add_executable(joy_teleop
+  src/joy_teleop.cpp
+)
+ament_target_dependencies(joy_teleop
+  rclcpp
+  sensor_msgs
+  geometry_msgs
+)
+
 target_include_directories(xbox_driver
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(joy_teleop
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
@@ -37,6 +52,7 @@ target_include_directories(xbox_driver
 
 install(TARGETS
   xbox_driver
+  joy_teleop
   DESTINATION lib/${PROJECT_NAME}
 )
 
