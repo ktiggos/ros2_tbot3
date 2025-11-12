@@ -58,7 +58,7 @@ void XboxDriver::pubCB(){
 int main(int argc, char* argv[]){
     rclcpp::init(argc,argv);
 
-    const char* dev = (argc > 1) ? argv[1] : "/dev/input/event14";
+    const char* dev = (argc > 2) ? argv[2] : "/dev/input/event14";
 
     rclcpp::spin(std::make_shared<XboxDriver>(dev));
     rclcpp::shutdown();
