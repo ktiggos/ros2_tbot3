@@ -27,8 +27,23 @@ JoyTeleop::JoyTeleop() : Node("joy_teleop"){
     );
 }
 
+void JoyTeleop::compute_velocities(){
+    if(joy_msg_->axes[1]){
+        cmd_vel_msg.linear.x = -10.0 * (joy_msg_->axes[1] / MAX_ANALOG);
+        cmd_vel_msg.angular.z = -10.0 * (joy_msg_->axes[3] / MAX_ANALOG);
+    }else if(joy_msg_->axes[2]){
+        cmd_vel_msg.angular.z = 10.0 * (joy_msg_->axes[2] / MAX_TRIGGER);
+    }else if(joy_msg_->axes[5]){
+        cmd_vel_msg.angular.z = -10.0 * (joy_msg_->axes[5] / MAX_TRIGGER);
+    }else{
+        cmd_vel_msg.linear.x = 0.0;
+        cmd_vel_msg.angular.z = 0.0;
+    }
+}
+
 void JoyTeleop::joyCB(const sensor_msgs::msg::Joy::SharedPtr msg){
     this->joy_msg_ = msg;
+    this->compute_velocities();
 }
 
 void JoyTeleop::pubCB(){

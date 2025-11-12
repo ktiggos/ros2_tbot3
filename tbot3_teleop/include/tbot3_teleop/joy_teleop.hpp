@@ -17,6 +17,7 @@ class JoyTeleop : public rclcpp::Node {
     private:
         void joyCB(const sensor_msgs::msg::Joy::SharedPtr msg);
         void pubCB();
+        void compute_velocities();
 
         sensor_msgs::msg::Joy::SharedPtr joy_msg_;
         geometry_msgs::msg::Twist cmd_vel_msg;
