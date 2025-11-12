@@ -6,8 +6,8 @@
 #include <sensor_msgs/msg/joy.hpp>
 #include <rosidl_runtime_cpp/message_initialization.hpp>
 
-#define MAX_ANALOG 37000.0
-#define MAX_TRIGGER 1000.0
+#define MAX_ANALOG 32768.0
+#define MAX_TRIGGER 1023.0
 
 typedef rosidl_runtime_cpp::MessageInitialization MessageInit;
 
