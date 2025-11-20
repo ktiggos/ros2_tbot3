@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(webots_ros2_driver REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(nav_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -48,6 +49,7 @@ ament_target_dependencies(
   pluginlib
   rclcpp
   webots_ros2_driver
+  nav_msgs
 )
 
 install(TARGETS

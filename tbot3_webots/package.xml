@@ -16,6 +16,7 @@
   <depend>geometry_msgs</depend>
   <depend>webots_ros2_driver</depend>
   <depend>pluginlib</depend>
+  <depend>nav_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
