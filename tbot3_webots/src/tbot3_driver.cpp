@@ -1,11 +1,11 @@
 #include "tbot3_webots/tbot3_driver.hpp"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <cstdio>
 #include <functional>
-// #include <webots/Motor.hpp>
 #include <webots/motor.h>
-// #include <webots/Robot.hpp>
 #include <webots/robot.h>
+#include <webots/position_sensor.h>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -25,18 +25,31 @@ void tb3_driver::Tb3Driver::cmdVelCB(const geometry_msgs::msg::Twist::SharedPtr 
 void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
                                  std::unordered_map<std::string, std::string> &parameters)
 {
-    std::cout<<"Initializing differential driver for Turtlebot..."<<std::endl;
-
     this->node_ = node;
+
+    RCLCPP_INFO(node_->get_logger(),"Initializing differential driver for Turtlebot...");
     
-    right_motor = wb_robot_get_device("wheel_right_joint");
     left_motor = wb_robot_get_device("wheel_left_joint");
+    right_motor = wb_robot_get_device("wheel_right_joint");
+    lm_sensor = wb_robot_get_device("wheel_left_joint_sensor");
+    rm_sensor = wb_robot_get_device("wheel_right_joint_sensor");
 
     wb_motor_set_position(left_motor, INFINITY);
     wb_motor_set_velocity(left_motor, 0.0);
 
     wb_motor_set_position(right_motor, INFINITY);
     wb_motor_set_velocity(right_motor, 0.0);
+
+    wb_position_sensor_enable(lm_sensor, 10);
+    wb_position_sensor_enable(rm_sensor, 10);
+
+    RCLCPP_INFO(node_->get_logger(), "Initializing odometry measurements...");
+    odom_msg.pose.pose.position = geometry_msgs::msg::Point(
+        MessageInit::ZERO
+    );
+    odom_msg.pose.pose.orientation = geometry_msgs::msg::Quaternion(
+        MessageInit::ZERO
+    );
 
     cb_time = node->get_clock()->now();
     driver_time = node->get_clock()->now();
@@ -63,12 +76,33 @@ void tb3_driver::Tb3Driver::step(){
     double ang_speed = stale ? (cmd_vel_msg.angular.z)*ANGULAR_COEFF : 0.0;
 
     // Rotational speeds for motors (req.speed/rad)
-    double lm_cmd = (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
-    double rm_cmd = (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
+    double lm_cmd{ (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
+    double rm_cmd{ (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
 
     lm_cmd = abs(lm_cmd) < 10.0 ? lm_cmd : (lm_cmd/abs(lm_cmd))*10.0;
     rm_cmd = abs(rm_cmd) < 10.0 ? rm_cmd : (rm_cmd/abs(rm_cmd))*10.0;
 
     wb_motor_set_velocity(left_motor, lm_cmd);
     wb_motor_set_velocity(right_motor, rm_cmd);
+
+    // Odometry
+    double ldis{ wb_position_sensor_get_value(lm_sensor) * WHEEL_RAD };
+    double rdis{ wb_position_sensor_get_value(rm_sensor) * WHEEL_RAD };
+
+    double dldis{ ldis - ldis_last };
+    double drdis{ rdis - rdis_last};
+    ldis_last = ldis;
+    rdis_last = rdis;
+
+    double dis_avg{ (dldis + drdis) / 2.0 };
+    double dtheta{ (drdis - dldis) / (WHEEL_HALF_DIS * 2.0) };
+
+    odom_msg.pose.pose.position.x += dis_avg * cos(theta + 0.5 * dtheta);
+    odom_msg.pose.pose.position.y += dis_avg * sin(theta + 0.5 * dtheta);
+
+    theta += dtheta;
+
+    tf2::Quaternion q;
+    q.setRPY(0.0, 0.0, theta);
+    odom_msg.pose.pose.orientation = tf2::toMsg(q);
 }
