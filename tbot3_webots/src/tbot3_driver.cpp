@@ -51,10 +51,10 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
         MessageInit::ZERO
     );
 
-    cb_time = node->get_clock()->now();
-    driver_time = node->get_clock()->now();
+    cb_time = node_->get_clock()->now();
+    driver_time = node_->get_clock()->now();
 
-    cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>(
+    cmd_vel_sub_ = node_->create_subscription<geometry_msgs::msg::Twist>(
         "/cmd_vel",
         rclcpp::SensorDataQoS().reliable(),
         [this](geometry_msgs::msg::Twist::SharedPtr msg) -> void {
