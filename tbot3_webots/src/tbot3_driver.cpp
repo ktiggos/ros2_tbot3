@@ -67,13 +67,13 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
 void tb3_driver::Tb3Driver::step(){
     driver_time = node_->get_clock()->now();
 
-    bool stale{ (driver_time - cb_time) < 
+    bool stale{ (driver_time - cb_time) > 
         rclcpp::Duration::from_seconds(timeout)
     };
 
     // Differential Drive is used for Turtlebot3
-    double fwd_speed = stale ? (cmd_vel_msg.linear.x)*LINEAR_COEFF : 0.0;
-    double ang_speed = stale ? (cmd_vel_msg.angular.z)*ANGULAR_COEFF : 0.0;
+    double fwd_speed = stale ? 0.0 : (cmd_vel_msg.linear.x)*LINEAR_COEFF;
+    double ang_speed = stale ? 0.0 : (cmd_vel_msg.angular.z)*ANGULAR_COEFF;
 
     // Rotational speeds for motors (req.speed/rad)
     double lm_cmd{ (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
