@@ -25,6 +25,7 @@ private:
     void cmdVelCB(const geometry_msgs::msg::Twist::SharedPtr msg);
 
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     geometry_msgs::msg::Twist cmd_vel_msg;
     nav_msgs::msg::Odometry odom_msg;
 
