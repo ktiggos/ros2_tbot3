@@ -50,9 +50,15 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
     odom_msg.pose.pose.orientation = geometry_msgs::msg::Quaternion(
         MessageInit::ZERO
     );
+    odom_msg.header.frame_id = "base_link";
+    odom_msg.child_frame_id = "odom";
 
     cb_time = node_->get_clock()->now();
     driver_time = node_->get_clock()->now();
+
+    odom_pub_ = node_->create_publisher<nav_msgs::msg::Odometry>(
+        "/odom", 10
+    );
 
     cmd_vel_sub_ = node_->create_subscription<geometry_msgs::msg::Twist>(
         "/cmd_vel",
@@ -105,4 +111,7 @@ void tb3_driver::Tb3Driver::step(){
     tf2::Quaternion q;
     q.setRPY(0.0, 0.0, theta);
     odom_msg.pose.pose.orientation = tf2::toMsg(q);
+
+    odom_msg.header.stamp = node_->get_clock()->now();
+    odom_pub_->publish(odom_msg);
 }
