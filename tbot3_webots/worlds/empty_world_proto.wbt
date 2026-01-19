@@ -3,7 +3,7 @@
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/CircleArena.proto"
-EXTERNPROTO "../description/proto/turtlebot3_waffle.proto"
+EXTERNPROTO "../description/proto/Turtlebot3Waffle.proto"
 
 WorldInfo {
 }
@@ -19,9 +19,9 @@ CircleArena {
   radius 3
 }
 
-turtlebot3_waffle {
-  name "turtlebot3_waffle"
-  controller "extern"
+Turtlebot3Waffle {
+  name "Turtlebot3Waffle"
+  controller "<extern>"
   translation 0 0 0.05
   rotation 0 1 0 0 
 }
