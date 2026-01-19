@@ -1,6 +1,15 @@
 <?xml version="1.0" ?>
 <robot name="Turtlebot3Waffle">
   <webots>
+    <plugin type="webots_ros2_driver::Ros2IMU">
+        <enabled>true</enabled>
+        <topicName>/imu/data</topicName>
+        <alwaysOn>true</alwaysOn>
+        <frameName>imu_link</frameName>
+        <inertialUnitName>imu_inertial</inertialUnitName>
+        <gyroName>imu_gyro</gyroName>
+        <accelerometerName>imu_acc</accelerometerName>
+    </plugin>
     <plugin type="tb3_driver::Tb3Driver"/>
   </webots>
 </robot>

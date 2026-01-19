@@ -35,6 +35,15 @@ PROTO Turtlebot3Waffle [
           }
         ]
       }
+      InertialUnit {
+        name "imu_inertial"
+      }
+      Gyro {
+        name "imu_gyro"
+      }
+      Accelerometer {
+        name "imu_acc"
+      }
       HingeJoint {
         jointParameters HingeJointParameters {
           axis 0.000000 1.000000 0.000796
