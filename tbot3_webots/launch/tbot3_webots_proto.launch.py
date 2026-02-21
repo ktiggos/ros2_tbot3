@@ -11,8 +11,9 @@ from launch.event_handlers import OnProcessExit, OnProcessIO
 def generate_launch_description():
     pkg_dir = get_package_share_directory("tbot3_webots")
     
-    urdf_path = os.path.join(pkg_dir,'description/urdf',"tbot3_waffle_proto.urdf")
-    with open(urdf_path,'r') as urdf:
+    urdf_proto = os.path.join(pkg_dir,'description/urdf',"tbot3_waffle_proto.urdf")
+    urdf_state = os.path.join(pkg_dir,'description/urdf',"turtlebot3_waffle_clean.urdf")
+    with open(urdf_state,'r') as urdf:
         lines = urdf.readlines()
         robot_description = ''.join(line for line in lines if not line.strip().startswith('<?xml'))
 
@@ -28,14 +29,22 @@ def generate_launch_description():
         executable='robot_state_publisher',
         output='screen',
         parameters=[{
-            'robot_description' : robot_description
+            'robot_description' : robot_description,
+            'use_sim_time': True
         }]
+    )
+
+    joint_state_publisher = launch_ros.actions.Node(
+        package='joint_state_publisher',
+        executable='joint_state_publisher',
+        output='screen',
+        parameters=[{'use_sim_time': True}]
     )
 
     driver = WebotsController(
         robot_name="Turtlebot3Waffle",
         parameters=[
-            {'robot_description' : urdf_path}
+            {'robot_description' : urdf_proto}
         ]
     )
 
@@ -43,6 +52,7 @@ def generate_launch_description():
         webots,
         webots._supervisor,
         robot_state_publisher,
+        joint_state_publisher,
         driver,
         launch.actions.RegisterEventHandler(
             event_handler=OnProcessExit(
