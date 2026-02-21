@@ -17,6 +17,7 @@
   <depend>webots_ros2_driver</depend>
   <depend>pluginlib</depend>
   <depend>nav_msgs</depend>
+  <depend>tbot3_rviz</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

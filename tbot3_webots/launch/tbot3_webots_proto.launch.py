@@ -7,9 +7,12 @@ from webots_ros2_driver.urdf_spawner import URDFSpawner
 from webots_ros2_driver.utils import controller_url_prefix
 from ament_index_python.packages import get_package_share_directory
 from launch.event_handlers import OnProcessExit, OnProcessIO
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
     pkg_dir = get_package_share_directory("tbot3_webots")
+    pkg_rviz = get_package_share_directory("tbot3_rviz")
     
     urdf_proto = os.path.join(pkg_dir,'description/urdf',"tbot3_waffle_proto.urdf")
     urdf_state = os.path.join(pkg_dir,'description/urdf',"turtlebot3_waffle_clean.urdf")
@@ -48,12 +51,20 @@ def generate_launch_description():
         ]
     )
 
+
+    rviz_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_rviz, 'launch', 'tbot3_rviz.launch.py')
+        )
+    )
+
     return launch.launch_description.LaunchDescription([
         webots,
         webots._supervisor,
         robot_state_publisher,
         joint_state_publisher,
         driver,
+        rviz_launch,
         launch.actions.RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=webots,
