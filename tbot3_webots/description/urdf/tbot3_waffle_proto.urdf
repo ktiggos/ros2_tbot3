@@ -1,15 +1,25 @@
 <?xml version="1.0" ?>
 <robot name="Turtlebot3Waffle">
   <webots>
-    <plugin type="webots_ros2_driver::Ros2IMU">
-        <enabled>true</enabled>
-        <topicName>/imu/data</topicName>
+    <device reference="lidar" type="Lidar">
+      <ros>
+        <topicName>/scan</topicName>
+        <frameName>base_scan</frameName>
         <alwaysOn>true</alwaysOn>
-        <frameName>imu_link</frameName>
-        <inertialUnitName>imu_inertial</inertialUnitName>
-        <gyroName>imu_gyro</gyroName>
-        <accelerometerName>imu_acc</accelerometerName>
+        <pointCloud>true</pointCloud>
+      </ros>
+    </device>
+    
+    <plugin type="webots_ros2_driver::Ros2IMU">
+      <enabled>true</enabled>
+      <topicName>/imu/data</topicName>
+      <alwaysOn>true</alwaysOn>
+      <frameName>imu_link</frameName>
+      <inertialUnitName>imu_inertial</inertialUnitName>
+      <gyroName>imu_gyro</gyroName>
+      <accelerometerName>imu_acc</accelerometerName>
     </plugin>
+
     <plugin type="tb3_driver::Tb3Driver"/>
   </webots>
 </robot>
