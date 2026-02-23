@@ -112,6 +112,8 @@ void tb3_driver::Tb3Driver::step(){
     q.setRPY(0.0, 0.0, theta);
     odom_msg.pose.pose.orientation = tf2::toMsg(q);
 
+    odom_msg.twist.twist = cmd_vel_msg;
+
     odom_msg.header.stamp = node_->get_clock()->now();
     odom_pub_->publish(odom_msg);
 }
