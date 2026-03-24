@@ -131,4 +131,12 @@
       </inertial>
   </link>
 
+  <link name="base_scan"/>
+
+  <joint name="base_scan_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_scan"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+  </joint>
+
 </robot>
