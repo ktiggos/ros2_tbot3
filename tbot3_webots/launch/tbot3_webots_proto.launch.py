@@ -21,7 +21,7 @@ def generate_launch_description():
         robot_description = ''.join(line for line in lines if not line.strip().startswith('<?xml'))
 
     webots = WebotsLauncher(
-        world=os.path.join(pkg_dir,'worlds','empty_world_proto.wbt'),
+        world=os.path.join(pkg_dir,'worlds','obstacle_world.wbt'),
         gui = True,
         ros2_supervisor=True,
         output='screen'
