@@ -1,0 +1,46 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/CircleArena.proto"
+EXTERNPROTO "/home/ktingos/ros2/colcon_ws/src/ros2_tbot3/tbot3_webots/description/proto/Turtlebot3Waffle.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.26184594401232675 -0.15945007805614694 0.9518468228723475 4.25138219125445
+  position 1.9551899862788102 4.0286902485376235 2.8052325568609366
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+CircleArena {
+  radius 50
+}
+Solid {
+  translation 0.71 0 0.55
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+        }
+        texture ImageTexture {
+        }
+      }
+      geometry Box {
+        size 0.5 0.5 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 0.5 0.5 1
+  }
+  physics Physics {
+  }
+}
+Turtlebot3Waffle {
+  translation 0 0 0.05
+  rotation 0 1 0 0
+  controller "<extern>"
+}
