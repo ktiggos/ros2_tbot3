@@ -16,7 +16,7 @@ TexturedBackground {
 TexturedBackgroundLight {
 }
 CircleArena {
-  radius 3
+  radius 50
 }
 
 Turtlebot3Waffle {
