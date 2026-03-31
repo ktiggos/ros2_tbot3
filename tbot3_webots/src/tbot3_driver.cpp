@@ -50,8 +50,10 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
     odom_msg.pose.pose.orientation = geometry_msgs::msg::Quaternion(
         MessageInit::ZERO
     );
-    odom_msg.header.frame_id = "base_link";
-    odom_msg.child_frame_id = "odom";
+    odom_msg.header.frame_id = "odom";
+    odom_msg.child_frame_id = "base_link";
+
+    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_);
 
     cb_time = node_->get_clock()->now();
     driver_time = node_->get_clock()->now();
@@ -114,6 +116,18 @@ void tb3_driver::Tb3Driver::step(){
 
     odom_msg.twist.twist = cmd_vel_msg;
 
+    geometry_msgs::msg::TransformStamped tf_msg;
+
+    tf_msg.header.frame_id = "odom";
+    tf_msg.child_frame_id = "base_link";
+    
+    tf_msg.transform.translation.x = odom_msg.pose.pose.position.x;
+    tf_msg.transform.translation.y = odom_msg.pose.pose.position.y;
+    tf_msg.transform.translation.z = 0.0;
+    tf_msg.transform.rotation = odom_msg.pose.pose.orientation;
+
     odom_msg.header.stamp = node_->get_clock()->now();
+    tf_msg.header.stamp = odom_msg.header.stamp;
     odom_pub_->publish(odom_msg);
+    tf_broadcaster_->sendTransform(tf_msg);
 }
