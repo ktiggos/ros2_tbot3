@@ -46,9 +46,10 @@ def generate_launch_description():
 
     driver = WebotsController(
         robot_name="Turtlebot3Waffle",
-        parameters=[
-            {'robot_description' : urdf_proto}
-        ]
+        parameters=[{
+            'robot_description': urdf_proto,
+            'use_sim_time': True,
+        }]
     )
 
 
