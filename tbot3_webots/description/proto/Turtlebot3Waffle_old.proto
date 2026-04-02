@@ -1,17 +1,19 @@
 #VRML_SIM R2025a utf8
 # license: Apache License 2.0
-# license url: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the Turtlebot3Waffle
+# Extracted from: /home/ktingos/ros2/colcon_ws/src/ros2_tbot3/tbot3_webots/description/urdf/turtlebot3_waffle_clean.urdf
 
 PROTO Turtlebot3Waffle [
-  field  SFVec3f     translation     0 0 0.015
+  field  SFVec3f     translation     0 0 0
   field  SFRotation  rotation        0 0 1 0
-  field  SFString    name            "Turtlebot3Waffle"
-  field  SFString    controller      "extern"
-  field  MFString    controllerArgs  []
-  field  SFString    customData      ""
-  field  SFBool      supervisor      FALSE
-  field  SFBool      synchronization TRUE
-  field  SFBool      selfCollision   FALSE
+  field  SFString    name            "Turtlebot3Waffle"  # Is `Robot.name`.
+  field  SFString    controller      "extern"            # Is `Robot.controller`.
+  field  MFString    controllerArgs  []                  # Is `Robot.controllerArgs`.
+  field  SFString    customData      ""                  # Is `Robot.customData`.
+  field  SFBool      supervisor      FALSE               # Is `Robot.supervisor`.
+  field  SFBool      synchronization TRUE                # Is `Robot.synchronization`.
+  field  SFBool      selfCollision   FALSE               # Is `Robot.selfCollision`.
 ]
 {
   Robot {
@@ -33,7 +35,6 @@ PROTO Turtlebot3Waffle [
           }
         ]
       }
-
       InertialUnit {
         name "imu_inertial"
       }
@@ -43,9 +44,8 @@ PROTO Turtlebot3Waffle [
       Accelerometer {
         name "imu_acc"
       }
-
       Pose {
-        translation 0 0 0.2
+        translation 0 0 0.15
         children [
           Lidar {
             name "lidar"
@@ -59,16 +59,15 @@ PROTO Turtlebot3Waffle [
           }
         ]
       }
-
       HingeJoint {
         jointParameters HingeJointParameters {
-          axis 0 1 0
+          axis 0.000000 1.000000 0.000796
           anchor 0.000000 0.144000 0.023000
         }
         device [
           RotationalMotor {
             name "wheel_left_joint"
-            maxTorque 5
+            maxTorque 100
           }
           PositionSensor {
             name "wheel_left_joint_sensor"
@@ -104,16 +103,15 @@ PROTO Turtlebot3Waffle [
           }
         }
       }
-
       HingeJoint {
         jointParameters HingeJointParameters {
-          axis 0 1 0
+          axis 0.000000 1.000000 0.000796
           anchor 0.000000 -0.144000 0.023000
         }
         device [
           RotationalMotor {
             name "wheel_right_joint"
-            maxTorque 5
+            maxTorque 100
           }
           PositionSensor {
             name "wheel_right_joint_sensor"
@@ -149,43 +147,16 @@ PROTO Turtlebot3Waffle [
           }
         }
       }
-
-      Solid {
-        translation -0.130000 0.000000 0.023000
-        name "rear_support"
-        boundingObject Sphere {
-          radius 0.033
-        }
-        physics Physics {
-          density -1
-          mass 0.015
-        }
-      }
-
-      Solid {
-        translation 0.130000 0.000000 0.023000
-        name "front_support"
-        boundingObject Sphere {
-          radius 0.033
-        }
-        physics Physics {
-          density -1
-          mass 0.015
-        }
-      }
     ]
-
     name IS name
-
     boundingObject Pose {
-      translation -0.064000 0.000000 0.090000
+      translation -0.064000 0.000000 0.047000
       children [
         Box {
-          size 0.180000 0.180000 0.040000
+           size 0.266000 0.266000 0.094000
         }
       ]
     }
-
     physics Physics {
       density -1
       mass 1.372910
