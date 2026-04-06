@@ -24,6 +24,19 @@ def generate_launch_description():
         parameters=[costmap_params]
     )
 
+    lifecycle_manager = launch_ros.actions.Node(
+        package="nav2_lifecycle_manager",
+        executable="lifecycle_manager",
+        name="lifecycle_manager",
+        output="screen",
+        parameters=[{
+            'use_sim_time': True,
+            'node_names': ["/costmap/costmap"],
+            'autostart': True
+        }]
+    )
+
     return launch.launch_description.LaunchDescription([
-        costmap_2d
+        costmap_2d,
+        lifecycle_manager
     ])
