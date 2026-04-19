@@ -9,7 +9,7 @@ PROTO Turtlebot3Waffle [
   field  SFString    controller      "extern"
   field  MFString    controllerArgs  []
   field  SFString    customData      ""
-  field  SFBool      supervisor      FALSE
+  field  SFBool      supervisor      TRUE
   field  SFBool      synchronization TRUE
   field  SFBool      selfCollision   FALSE
 ]
