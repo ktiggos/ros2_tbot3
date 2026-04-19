@@ -39,8 +39,8 @@ private:
     WbDeviceTag rm_sensor;
 
     // Callback watchdog
-    rclcpp::Time cb_time, driver_time;
-    double timeout{0.2}; // 200ms
+    rclcpp::Time cb_time, driver_time, dtime_last;
+    double timeout{1.0};
 
     // Odometry measurements
     double ldis_last{0.0};
