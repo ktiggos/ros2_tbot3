@@ -3,9 +3,11 @@
 
 #include <cstdio>
 #include <functional>
+#include <cmath>
 #include <webots/motor.h>
 #include <webots/robot.h>
 #include <webots/position_sensor.h>
+#include <webots/supervisor.h>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -13,9 +15,11 @@
 #define WHEEL_HALF_DIS 0.144
 #define WHEEL_RAD 0.033
 
-#define USE_SPEED_NORM false
 #define LINEAR_COEFF 0.33/10.0
 #define ANGULAR_COEFF 2.29/10.0
+
+#define USE_SPEED_NORM false
+#define FAKE_LOCALIZATION true
 
 PLUGINLIB_EXPORT_CLASS(tb3_driver::Tb3Driver, webots_ros2_driver::PluginInterface);
 
@@ -28,6 +32,7 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
                                  std::unordered_map<std::string, std::string> &parameters)
 {
     this->node_ = node;
+    self_node = wb_supervisor_node_get_self();
 
     RCLCPP_INFO(node_->get_logger(),"Initializing differential driver for Turtlebot...");
     
@@ -88,7 +93,6 @@ void tb3_driver::Tb3Driver::step(){
         rclcpp::Duration::from_seconds(timeout)
     };
 
-    // Differential Drive is used for Turtlebot3
     double fwd_speed = stale ? 0.0 : cmd_vel_msg.linear.x;
     double ang_speed = stale ? 0.0 : cmd_vel_msg.angular.z;
 
@@ -97,7 +101,6 @@ void tb3_driver::Tb3Driver::step(){
         ang_speed = ang_speed * ANGULAR_COEFF;
     }
 
-    // Rotational speeds for motors (req.speed/rad)
     double lm_cmd{ (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
     double rm_cmd{ (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
 
@@ -107,7 +110,6 @@ void tb3_driver::Tb3Driver::step(){
     wb_motor_set_velocity(left_motor, lm_cmd);
     wb_motor_set_velocity(right_motor, rm_cmd);
 
-    // Odometry
     double ldis{ wb_position_sensor_get_value(lm_sensor) * WHEEL_RAD };
     double rdis{ wb_position_sensor_get_value(rm_sensor) * WHEEL_RAD };
 
@@ -119,29 +121,77 @@ void tb3_driver::Tb3Driver::step(){
     double dis_avg{ (dldis + drdis) / 2.0 };
     double dtheta{ (drdis - dldis) / (WHEEL_HALF_DIS * 2.0) };
 
-    odom_msg.pose.pose.position.x += dis_avg * cos(theta + 0.5 * dtheta);
-    odom_msg.pose.pose.position.y += dis_avg * sin(theta + 0.5 * dtheta);
-
     theta += dtheta;
 
-    tf2::Quaternion q;
-    q.setRPY(0.0, 0.0, theta);
-    odom_msg.pose.pose.orientation = tf2::toMsg(q);
+    if(FAKE_LOCALIZATION){
+        const double *p = wb_supervisor_node_get_position(self_node);
+        const double *R = wb_supervisor_node_get_orientation(self_node);
 
-    if (dt > 1e-6) {
-        odom_msg.twist.twist.linear.x = dis_avg / dt;
-        odom_msg.twist.twist.linear.y = 0.0;
-        odom_msg.twist.twist.linear.z = 0.0;
-        odom_msg.twist.twist.angular.x = 0.0;
-        odom_msg.twist.twist.angular.y = 0.0;
-        odom_msg.twist.twist.angular.z = dtheta / dt;
+        double x = p[0];
+        double y = p[1];
+        double z = p[2];
+
+        double yaw = std::atan2(R[3], R[0]);
+
+        odom_msg.pose.pose.position.x = x;
+        odom_msg.pose.pose.position.y = y;
+        odom_msg.pose.pose.position.z = z;
+
+        tf2::Quaternion q;
+        q.setRPY(0.0, 0.0, yaw);
+        odom_msg.pose.pose.orientation = tf2::toMsg(q);
+
+        if (dt > 1e-6 && !gt_first) {
+            double vx_world = (x - gt_x_last) / dt;
+            double vy_world = (y - gt_y_last) / dt;
+            double dyaw = yaw - gt_yaw_last;
+
+            while (dyaw > M_PI) dyaw -= 2.0 * M_PI;
+            while (dyaw < -M_PI) dyaw += 2.0 * M_PI;
+
+            odom_msg.twist.twist.linear.x =
+                std::cos(yaw) * vx_world + std::sin(yaw) * vy_world;
+            odom_msg.twist.twist.linear.y = 0.0;
+            odom_msg.twist.twist.linear.z = 0.0;
+            odom_msg.twist.twist.angular.x = 0.0;
+            odom_msg.twist.twist.angular.y = 0.0;
+            odom_msg.twist.twist.angular.z = dyaw / dt;
+        } else {
+            odom_msg.twist.twist.linear.x = 0.0;
+            odom_msg.twist.twist.linear.y = 0.0;
+            odom_msg.twist.twist.linear.z = 0.0;
+            odom_msg.twist.twist.angular.x = 0.0;
+            odom_msg.twist.twist.angular.y = 0.0;
+            odom_msg.twist.twist.angular.z = 0.0;
+        }
+
+        gt_x_last = x;
+        gt_y_last = y;
+        gt_yaw_last = yaw;
+        gt_first = false;
     } else {
-        odom_msg.twist.twist.linear.x = 0.0;
-        odom_msg.twist.twist.linear.y = 0.0;
-        odom_msg.twist.twist.linear.z = 0.0;
-        odom_msg.twist.twist.angular.x = 0.0;
-        odom_msg.twist.twist.angular.y = 0.0;
-        odom_msg.twist.twist.angular.z = 0.0;
+        odom_msg.pose.pose.position.x += dis_avg * std::cos(theta + 0.5 * dtheta);
+        odom_msg.pose.pose.position.y += dis_avg * std::sin(theta + 0.5 * dtheta);
+
+        tf2::Quaternion q;
+        q.setRPY(0.0, 0.0, theta);
+        odom_msg.pose.pose.orientation = tf2::toMsg(q);
+
+        if (dt > 1e-6) {
+            odom_msg.twist.twist.linear.x = dis_avg / dt;
+            odom_msg.twist.twist.linear.y = 0.0;
+            odom_msg.twist.twist.linear.z = 0.0;
+            odom_msg.twist.twist.angular.x = 0.0;
+            odom_msg.twist.twist.angular.y = 0.0;
+            odom_msg.twist.twist.angular.z = dtheta / dt;
+        } else {
+            odom_msg.twist.twist.linear.x = 0.0;
+            odom_msg.twist.twist.linear.y = 0.0;
+            odom_msg.twist.twist.linear.z = 0.0;
+            odom_msg.twist.twist.angular.x = 0.0;
+            odom_msg.twist.twist.angular.y = 0.0;
+            odom_msg.twist.twist.angular.z = 0.0;
+        }
     }
 
     geometry_msgs::msg::TransformStamped tf_msg;
@@ -151,10 +201,10 @@ void tb3_driver::Tb3Driver::step(){
     
     tf_msg.transform.translation.x = odom_msg.pose.pose.position.x;
     tf_msg.transform.translation.y = odom_msg.pose.pose.position.y;
-    tf_msg.transform.translation.z = 0.0;
+    tf_msg.transform.translation.z = odom_msg.pose.pose.position.z;
     tf_msg.transform.rotation = odom_msg.pose.pose.orientation;
 
-    odom_msg.header.stamp = node_->get_clock()->now();
+    odom_msg.header.stamp = now;
     tf_msg.header.stamp = odom_msg.header.stamp;
     odom_pub_->publish(odom_msg);
     tf_broadcaster_->sendTransform(tf_msg);

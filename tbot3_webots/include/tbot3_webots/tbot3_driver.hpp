@@ -38,16 +38,20 @@ private:
     WbDeviceTag lm_sensor;
     WbDeviceTag rm_sensor;
 
-    // Callback watchdog
     rclcpp::Time cb_time, driver_time, dtime_last;
     double timeout{1.0};
 
-    // Odometry measurements
     double ldis_last{0.0};
     double rdis_last{0.0};
     double theta{0.0};
 
     webots_ros2_driver::WebotsNode* node_;
+    WbNodeRef self_node;
+
+    double gt_x_last{0.0};
+    double gt_y_last{0.0};
+    double gt_yaw_last{0.0};
+    bool gt_first{true};
 };
 }
 
