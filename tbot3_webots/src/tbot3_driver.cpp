@@ -18,7 +18,7 @@
 #define LINEAR_COEFF 0.33/10.0
 #define ANGULAR_COEFF 2.29/10.0
 
-#define USE_SPEED_NORM false
+#define USE_SPEED_NORM true
 #define FAKE_LOCALIZATION true
 
 PLUGINLIB_EXPORT_CLASS(tb3_driver::Tb3Driver, webots_ros2_driver::PluginInterface);
@@ -123,6 +123,7 @@ void tb3_driver::Tb3Driver::step(){
 
     theta += dtheta;
 
+    double lin{0.0}, ang{0.0};
     if(FAKE_LOCALIZATION){
         const double *p = wb_supervisor_node_get_position(self_node);
         const double *R = wb_supervisor_node_get_orientation(self_node);
@@ -149,20 +150,11 @@ void tb3_driver::Tb3Driver::step(){
             while (dyaw > M_PI) dyaw -= 2.0 * M_PI;
             while (dyaw < -M_PI) dyaw += 2.0 * M_PI;
 
-            odom_msg.twist.twist.linear.x =
-                std::cos(yaw) * vx_world + std::sin(yaw) * vy_world;
-            odom_msg.twist.twist.linear.y = 0.0;
-            odom_msg.twist.twist.linear.z = 0.0;
-            odom_msg.twist.twist.angular.x = 0.0;
-            odom_msg.twist.twist.angular.y = 0.0;
-            odom_msg.twist.twist.angular.z = dyaw / dt;
+            lin = std::cos(yaw) * vx_world + std::sin(yaw) * vy_world;
+            ang = dyaw / dt;
         } else {
-            odom_msg.twist.twist.linear.x = 0.0;
-            odom_msg.twist.twist.linear.y = 0.0;
-            odom_msg.twist.twist.linear.z = 0.0;
-            odom_msg.twist.twist.angular.x = 0.0;
-            odom_msg.twist.twist.angular.y = 0.0;
-            odom_msg.twist.twist.angular.z = 0.0;
+            lin = 0.0;
+            ang = 0.0;
         }
 
         gt_x_last = x;
@@ -178,21 +170,25 @@ void tb3_driver::Tb3Driver::step(){
         odom_msg.pose.pose.orientation = tf2::toMsg(q);
 
         if (dt > 1e-6) {
-            odom_msg.twist.twist.linear.x = dis_avg / dt;
-            odom_msg.twist.twist.linear.y = 0.0;
-            odom_msg.twist.twist.linear.z = 0.0;
-            odom_msg.twist.twist.angular.x = 0.0;
-            odom_msg.twist.twist.angular.y = 0.0;
-            odom_msg.twist.twist.angular.z = dtheta / dt;
+            lin = dis_avg / dt;
+            ang = dtheta / dt;
         } else {
-            odom_msg.twist.twist.linear.x = 0.0;
-            odom_msg.twist.twist.linear.y = 0.0;
-            odom_msg.twist.twist.linear.z = 0.0;
-            odom_msg.twist.twist.angular.x = 0.0;
-            odom_msg.twist.twist.angular.y = 0.0;
-            odom_msg.twist.twist.angular.z = 0.0;
+            lin = 0.0;
+            ang = 0.0;
         }
     }
+
+    if(USE_SPEED_NORM){
+        lin = lin / LINEAR_COEFF;
+        ang = ang / ANGULAR_COEFF;
+    }
+
+    odom_msg.twist.twist.linear.x = lin;
+    odom_msg.twist.twist.linear.y = 0.0;
+    odom_msg.twist.twist.linear.z = 0.0;
+    odom_msg.twist.twist.angular.x = 0.0;
+    odom_msg.twist.twist.angular.y = 0.0;
+    odom_msg.twist.twist.angular.z = ang;
 
     geometry_msgs::msg::TransformStamped tf_msg;
 
