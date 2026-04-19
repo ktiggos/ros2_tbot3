@@ -57,6 +57,7 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
 
     cb_time = node_->get_clock()->now();
     driver_time = node_->get_clock()->now();
+    dtime_last = node_->get_clock()->now();
 
     odom_pub_ = node_->create_publisher<nav_msgs::msg::Odometry>(
         "/odom", 10
@@ -74,6 +75,10 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
 
 void tb3_driver::Tb3Driver::step(){
     driver_time = node_->get_clock()->now();
+
+    rclcpp::Time now = node_->get_clock()->now();
+    double dt = (now - dtime_last).seconds();
+    this->dtime_last = now;
 
     bool stale{ (driver_time - cb_time) > 
         rclcpp::Duration::from_seconds(timeout)
@@ -98,7 +103,7 @@ void tb3_driver::Tb3Driver::step(){
     double rdis{ wb_position_sensor_get_value(rm_sensor) * WHEEL_RAD };
 
     double dldis{ ldis - ldis_last };
-    double drdis{ rdis - rdis_last};
+    double drdis{ rdis - rdis_last };
     ldis_last = ldis;
     rdis_last = rdis;
 
@@ -114,7 +119,21 @@ void tb3_driver::Tb3Driver::step(){
     q.setRPY(0.0, 0.0, theta);
     odom_msg.pose.pose.orientation = tf2::toMsg(q);
 
-    odom_msg.twist.twist = cmd_vel_msg;
+    if (dt > 1e-6) {
+        odom_msg.twist.twist.linear.x = dis_avg / dt;
+        odom_msg.twist.twist.linear.y = 0.0;
+        odom_msg.twist.twist.linear.z = 0.0;
+        odom_msg.twist.twist.angular.x = 0.0;
+        odom_msg.twist.twist.angular.y = 0.0;
+        odom_msg.twist.twist.angular.z = dtheta / dt;
+    } else {
+        odom_msg.twist.twist.linear.x = 0.0;
+        odom_msg.twist.twist.linear.y = 0.0;
+        odom_msg.twist.twist.linear.z = 0.0;
+        odom_msg.twist.twist.angular.x = 0.0;
+        odom_msg.twist.twist.angular.y = 0.0;
+        odom_msg.twist.twist.angular.z = 0.0;
+    }
 
     geometry_msgs::msg::TransformStamped tf_msg;
 
