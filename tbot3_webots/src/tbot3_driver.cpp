@@ -12,6 +12,8 @@
 // Values taken from URDF
 #define WHEEL_HALF_DIS 0.144
 #define WHEEL_RAD 0.033
+
+#define USE_SPEED_NORM false
 #define LINEAR_COEFF 0.33/10.0
 #define ANGULAR_COEFF 2.29/10.0
 
@@ -50,6 +52,7 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
     odom_msg.pose.pose.orientation = geometry_msgs::msg::Quaternion(
         MessageInit::ZERO
     );
+    odom_msg.pose.pose.orientation.w = 1.0;
     odom_msg.header.frame_id = "odom";
     odom_msg.child_frame_id = "base_link";
 
@@ -74,9 +77,10 @@ void tb3_driver::Tb3Driver::init(webots_ros2_driver::WebotsNode *node,
 }
 
 void tb3_driver::Tb3Driver::step(){
-    driver_time = node_->get_clock()->now();
-
     rclcpp::Time now = node_->get_clock()->now();
+
+    driver_time = now;
+    
     double dt = (now - dtime_last).seconds();
     this->dtime_last = now;
 
@@ -85,15 +89,20 @@ void tb3_driver::Tb3Driver::step(){
     };
 
     // Differential Drive is used for Turtlebot3
-    double fwd_speed = stale ? 0.0 : (cmd_vel_msg.linear.x)*LINEAR_COEFF;
-    double ang_speed = stale ? 0.0 : (cmd_vel_msg.angular.z)*ANGULAR_COEFF;
+    double fwd_speed = stale ? 0.0 : cmd_vel_msg.linear.x;
+    double ang_speed = stale ? 0.0 : cmd_vel_msg.angular.z;
+
+    if(USE_SPEED_NORM){
+        fwd_speed = fwd_speed * LINEAR_COEFF;
+        ang_speed = ang_speed * ANGULAR_COEFF;
+    }
 
     // Rotational speeds for motors (req.speed/rad)
     double lm_cmd{ (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
     double rm_cmd{ (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
 
-    lm_cmd = abs(lm_cmd) < 10.0 ? lm_cmd : (lm_cmd/abs(lm_cmd))*10.0;
-    rm_cmd = abs(rm_cmd) < 10.0 ? rm_cmd : (rm_cmd/abs(rm_cmd))*10.0;
+    lm_cmd = std::abs(lm_cmd) < 10.0 ? lm_cmd : (lm_cmd/std::abs(lm_cmd))*10.0;
+    rm_cmd = std::abs(rm_cmd) < 10.0 ? rm_cmd : (rm_cmd/std::abs(rm_cmd))*10.0;
 
     wb_motor_set_velocity(left_motor, lm_cmd);
     wb_motor_set_velocity(right_motor, rm_cmd);
