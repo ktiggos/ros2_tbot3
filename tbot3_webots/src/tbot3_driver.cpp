@@ -15,11 +15,12 @@
 #define WHEEL_HALF_DIS 0.144
 #define WHEEL_RAD 0.033
 
+// Experimentaly calculated
 #define LINEAR_COEFF 0.33/10.0
 #define ANGULAR_COEFF 2.29/10.0
 
 #define USE_SPEED_NORM true
-#define FAKE_LOCALIZATION true
+#define FAKE_LOCALIZATION false
 
 PLUGINLIB_EXPORT_CLASS(tb3_driver::Tb3Driver, webots_ros2_driver::PluginInterface);
 
@@ -85,8 +86,11 @@ void tb3_driver::Tb3Driver::step(){
     rclcpp::Time now = node_->get_clock()->now();
 
     driver_time = now;
-    
+
     double dt = (now - dtime_last).seconds();
+
+    // RCLCPP_INFO(node_->get_logger(), "%f", dt);
+
     this->dtime_last = now;
 
     bool stale{ (driver_time - cb_time) > 
@@ -101,27 +105,14 @@ void tb3_driver::Tb3Driver::step(){
         ang_speed = ang_speed * ANGULAR_COEFF;
     }
 
-    double lm_cmd{ (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
-    double rm_cmd{ (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD };
+    double lm_cmd = (fwd_speed - ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
+    double rm_cmd = (fwd_speed + ang_speed * WHEEL_HALF_DIS) / WHEEL_RAD;
 
     lm_cmd = std::abs(lm_cmd) < 10.0 ? lm_cmd : (lm_cmd/std::abs(lm_cmd))*10.0;
     rm_cmd = std::abs(rm_cmd) < 10.0 ? rm_cmd : (rm_cmd/std::abs(rm_cmd))*10.0;
 
     wb_motor_set_velocity(left_motor, lm_cmd);
     wb_motor_set_velocity(right_motor, rm_cmd);
-
-    double ldis{ wb_position_sensor_get_value(lm_sensor) * WHEEL_RAD };
-    double rdis{ wb_position_sensor_get_value(rm_sensor) * WHEEL_RAD };
-
-    double dldis{ ldis - ldis_last };
-    double drdis{ rdis - rdis_last };
-    ldis_last = ldis;
-    rdis_last = rdis;
-
-    double dis_avg{ (dldis + drdis) / 2.0 };
-    double dtheta{ (drdis - dldis) / (WHEEL_HALF_DIS * 2.0) };
-
-    theta += dtheta;
 
     double lin{0.0}, ang{0.0};
     if(FAKE_LOCALIZATION){
@@ -142,18 +133,28 @@ void tb3_driver::Tb3Driver::step(){
         q.setRPY(0.0, 0.0, yaw);
         odom_msg.pose.pose.orientation = tf2::toMsg(q);
 
-        if (dt > 1e-6 && !gt_first) {
-            double vx_world = (x - gt_x_last) / dt;
-            double vy_world = (y - gt_y_last) / dt;
-            double dyaw = yaw - gt_yaw_last;
+        const int sign_dir = fwd_speed > 0.0 ? +1 : -1;
 
-            while (dyaw > M_PI) dyaw -= 2.0 * M_PI;
-            while (dyaw < -M_PI) dyaw += 2.0 * M_PI;
+        const double dis_avg = sign_dir * std::hypot(x - gt_x_last, y - gt_y_last);
+        const double dtheta = yaw - gt_yaw_last;
 
-            lin = std::cos(yaw) * vx_world + std::sin(yaw) * vy_world;
-            ang = dyaw / dt;
+        if(std::fabs(fwd_speed) > 1e-6){
+            if(std::fabs(dis_avg) > 1e-6 && std::fabs(dt - 0.032) > 1e-6){
+                lin = dis_avg / 0.032;
+            } else {
+                lin = this->lin_prev;
+            }
         } else {
             lin = 0.0;
+        }
+
+        if(std::fabs(ang_speed) > 1e-6){
+            if(std::fabs(dtheta) > 1e-6 && std::fabs(dt - 0.032) > 1e-6){
+                ang = dtheta / 0.032;
+            } else {
+                ang = this->ang_prev;
+            }
+        } else {
             ang = 0.0;
         }
 
@@ -162,25 +163,53 @@ void tb3_driver::Tb3Driver::step(){
         gt_yaw_last = yaw;
         gt_first = false;
     } else {
+        const double ldis = wb_position_sensor_get_value(lm_sensor) * WHEEL_RAD;
+        const double rdis = wb_position_sensor_get_value(rm_sensor) * WHEEL_RAD;
+
+        const double dldis = ldis - ldis_last;
+        const double drdis = rdis - rdis_last;
+        ldis_last = ldis;
+        rdis_last = rdis;
+
+        const double dis_avg = (dldis + drdis) / 2.0;
+        const double dtheta = (drdis - dldis) / (WHEEL_HALF_DIS * 2.0);
+
         odom_msg.pose.pose.position.x += dis_avg * std::cos(theta + 0.5 * dtheta);
         odom_msg.pose.pose.position.y += dis_avg * std::sin(theta + 0.5 * dtheta);
+
+        theta += dtheta;
 
         tf2::Quaternion q;
         q.setRPY(0.0, 0.0, theta);
         odom_msg.pose.pose.orientation = tf2::toMsg(q);
 
-        if (dt > 1e-6) {
-            lin = dis_avg / dt;
-            ang = dtheta / dt;
+        if(std::fabs(fwd_speed) > 1e-6){
+            if(std::fabs(dis_avg) > 1e-6 && std::fabs(dt - 0.032) > 1e-6){
+                lin = dis_avg / 0.032;
+            } else {
+                lin = this->lin_prev;
+            }
         } else {
             lin = 0.0;
+        }
+
+        if(std::fabs(ang_speed) > 1e-6){
+            if(std::fabs(dtheta) > 1e-6 && std::fabs(dt - 0.032) > 1e-6){
+                ang = dtheta / 0.032;
+            } else {
+                ang = this->ang_prev;
+            }
+        } else {
             ang = 0.0;
         }
     }
 
+    this->lin_prev = lin;
+    this->ang_prev = ang;
+
     if(USE_SPEED_NORM){
-        lin = lin / LINEAR_COEFF;
-        ang = ang / ANGULAR_COEFF;
+        lin = 1e+2 * lin / LINEAR_COEFF;
+        ang = 1e+2 * ang / ANGULAR_COEFF;
     }
 
     odom_msg.twist.twist.linear.x = lin;

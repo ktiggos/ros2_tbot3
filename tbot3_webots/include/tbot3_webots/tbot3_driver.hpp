@@ -39,7 +39,7 @@ private:
     WbDeviceTag rm_sensor;
 
     rclcpp::Time cb_time, driver_time, dtime_last;
-    double timeout{1.0};
+    double timeout{0.5};
 
     double ldis_last{0.0};
     double rdis_last{0.0};
@@ -52,6 +52,8 @@ private:
     double gt_y_last{0.0};
     double gt_yaw_last{0.0};
     bool gt_first{true};
+
+    double lin_prev{0.0}, ang_prev{0.0};
 };
 }
 
